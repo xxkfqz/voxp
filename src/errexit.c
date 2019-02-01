@@ -1,5 +1,9 @@
 #include "errexit.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
 void errexit(const char *format, ...)
 {
 	va_list msg;
