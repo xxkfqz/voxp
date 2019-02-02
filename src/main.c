@@ -39,9 +39,15 @@ Powered by:\n\
 ///////////////////////////////////////////////////////////
 typedef struct
 {
+	int32_t volume;
 	bool hiresSound:1;
 	bool libDebug:1;
-	int32_t volume;
+	// 0 - don't repeat
+	// 1 - repeat track
+	// 2 - repeat list
+	uint8_t repeatMode:2;
+	char **inputFiles;
+	int32_t inputFilesNumber;
 } options;
 ///////////////////////////////////////////////////////////
 void signalHandler(int32_t param);
@@ -57,13 +63,13 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, signalHandler);
 	signal(SIGINT, signalHandler);
 
-	const char *trackname = argv[argc - 1];
-
 	options *optionsList = (options*)malloc(sizeof(options));
 	// Default settings
 	*optionsList = (options)
 	{
 		.hiresSound = false,
+		.libDebug = false,
+		.repeatMode = 0,
 		.volume = 255
 	};
 
@@ -78,9 +84,23 @@ int main(int argc, char *argv[])
 			SV_INIT_FLAG_NO_DEBUG_OUTPUT)
 	);
 
-	sa_openTrack(trackname, optionsList->volume);
-	sa_printTrackInfo(0);
-	sa_playTrack(0);
+	for(int32_t currentTrack = 0; currentTrack < optionsList->inputFilesNumber; currentTrack++)
+	{
+		printf("\nTRACK:     %d/%d", currentTrack + 1, optionsList->inputFilesNumber);
+		sa_openTrack(
+			optionsList->inputFiles[currentTrack],
+			optionsList->volume,
+			optionsList->repeatMode == 1 ? false : true
+		);
+		sa_printTrackInfo(0);
+		sa_playTrack(0);
+
+		if(
+			currentTrack >= optionsList->inputFilesNumber - 1 &&
+			optionsList->repeatMode == 2
+		)
+			currentTrack = 0;
+	}
 
 	sa_deinitLib();
 	return 0;
@@ -89,13 +109,12 @@ int main(int argc, char *argv[])
 void signalHandler(int32_t param)
 {
 	sa_deinitLib();
-	//errexit("\nProgram has been interrupted with signal %d\n", param);
-	exit(-1);
+	errexit("\nProgram has been interrupted with signal %d\n", param);
 }
 
 void parseArguments(int argc, char **argv, options *ops)
 {
-	const char *optString = "hv:fD";
+	const char *optString = "hv:frRD";
 	char optResult = 0;
 
 	while((optResult = getopt(argc, argv, optString)) != -1)
@@ -108,6 +127,14 @@ void parseArguments(int argc, char **argv, options *ops)
 			case 'f':
 				ops->hiresSound = true;
 				break;
+			case 'r':
+				ops->repeatMode = 1;
+				break;
+			case 'R':
+				if(ops->repeatMode == 1)
+					break;
+				ops->repeatMode = 2;
+				break;
 			case 'D':
 				ops->libDebug = true;
 				break;
@@ -116,4 +143,6 @@ void parseArguments(int argc, char **argv, options *ops)
 				break;
 		}
 	}
+	ops->inputFiles = argv + optind;
+	ops->inputFilesNumber = argc - optind;
 }

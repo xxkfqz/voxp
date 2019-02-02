@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <dlfcn.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "sunapi.h"
 #include "errexit.h"
@@ -19,7 +20,7 @@ void sa_initLib(uint32_t initFlags)
 		errexit("sv_init error: %d\n", ver);
 
 	printf(
-		"SunVox library version: %d.%d.%d\n\n",
+		"SunVox library version: %d.%d.%d\n",
 		(ver >> 16) & 255,
 		(ver >> 8) & 255,
 		ver & 255
@@ -35,11 +36,12 @@ void sa_deinitLib(void)
 	sv_unload_dll();
 }
 
-void sa_openTrack(const char *trackname, int32_t volume)
+void sa_openTrack(const char *trackname, int32_t volume, bool repeatMode)
 {
 	if(sv_load(0, trackname))
 		errexit("Cannot load file: %s\n", trackname);
 
+	sv_set_autostop(0, repeatMode);
 	sv_volume(0, volume);
 }
 
@@ -52,7 +54,7 @@ void sa_printTrackInfo(int32_t slot)
 
 
 	printf(
-		"TITLE:     %s\nMODULES:   %d\nLENGTH:    %d:%-10d%d lines\n",
+		"\nTITLE:     %s\nMODULES:   %d\nLENGTH:    %d:%02d\nLINES:     %d\n",
 
 		sv_get_song_name(slot),
 
