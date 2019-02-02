@@ -9,7 +9,7 @@
 // a slot and prints some information
 //
 // 'initFlags' defined in 'sunvox.h' as 'SV_INIT_FLAG_AUDIO_*'
-void sa_initLib(uint32_t initFlags);
+void sa_initLib(bool monoMode, int32_t frequency, uint32_t initFlags);
 
 // Just safely deinitialize SunVox subsystems
 void sa_deinitLib(void);

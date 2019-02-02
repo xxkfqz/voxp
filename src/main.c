@@ -22,7 +22,7 @@
 voxp - player for SunVox projects with command-line interface\n\
 Author: xxkfqz <xxkfqz@gmail.com> 2019\n\
 \n\
-Usage: '%s [-hfqrR] [--debug] [-v N] *.SUNVOX [*.SUNVOX] ...'\n\
+Usage: '%s [-hfqrRm] [-v N] [-f N] [--debug] *.SUNVOX [*.SUNVOX] ...'\n\
 Options:\n\
   -h, --help\n\
       see this text and exit\n\
@@ -34,6 +34,11 @@ Options:\n\
       repeat one track\n\
   -r, --repeat-list\n\
       repeat tracklist (doesn't works with '-R')\n\
+  -m, --mono\n\
+      play tracks with single channel\n\
+  -f <frequency>, --frequency <frequency>\n\
+      output sample rate in Hz. Supported rates: 44100, 48000, 96000, 192000\n\
+      Default: 44100. High value (e.g. 192000) may occurs errors\n\
   --debug\n\
       show sunvox debug information\n\
 \n\
@@ -51,10 +56,12 @@ typedef struct
 {
 	int32_t volume;
 	int32_t inputFilesNumber;
+	int32_t frequency;
 	char **inputFiles;
 
 	bool hiresSound:1;
 	bool libDebug:1;
+	bool monoMode:1;
 	// 0 - don't repeat
 	// 1 - repeat track
 	// 2 - repeat list
@@ -82,12 +89,17 @@ int main(int argc, char *argv[])
 		.hiresSound = false,
 		.libDebug = false,
 		.repeatMode = 0,
-		.volume = 255
+		.volume = 255,
+		.monoMode = false,
+		.frequency = 44100
 	};
 
 	parseArguments(argc, argv, optionsList);
 
 	sa_initLib(
+		optionsList->monoMode,
+		optionsList->frequency,
+		// initFlags
 		(optionsList->hiresSound ?
 			SV_INIT_FLAG_AUDIO_FLOAT32 :
 			SV_INIT_FLAG_AUDIO_INT16) |
@@ -136,7 +148,7 @@ void signalHandler(int32_t param)
 
 void parseArguments(int argc, char **argv, commandLineOptions *ops)
 {
-	const char *optString = "hv:HrRD";
+	const char *optString = "hv:HrRmf:";
 	const struct option getoptOpsList[] =
 	{
 		{"help", no_argument, NULL, 'h'},
@@ -144,6 +156,8 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 		{"high-quality", no_argument, NULL, 'q'},
 		{"repeat-all", no_argument, NULL, 'r'},
 		{"repeat-track", no_argument, NULL, 'R'},
+		{"mono", required_argument, NULL, 'm'},
+		{"frequency", required_argument, NULL, 'f'},
 		{"debug", no_argument, NULL, 0},
 		{NULL, 0, NULL, 0}
 	};
@@ -168,6 +182,12 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 				if(ops->repeatMode == 1)
 					break;
 				ops->repeatMode = 2;
+				break;
+			case 'm':
+				ops->monoMode = true;
+				break;
+			case 'f':
+				ops->frequency = atoi(optarg);
 				break;
 			case 0:
 				if(strcmp("debug", getoptOpsList[longIndex].name) == 0)
