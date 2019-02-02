@@ -54,7 +54,7 @@ void sa_printTrackInfo(int32_t slot)
 
 
 	printf(
-		"\nTITLE:     %s\nMODULES:   %d\nLENGTH:    %d:%02d\nLINES:     %d\n",
+		"\nTITLE:     \"%s\"\nMODULES:   %d\nLENGTH:    %d:%02d\nLINES:     %d\n",
 
 		sv_get_song_name(slot),
 
