@@ -8,15 +8,13 @@
 #define SUNVOX_MAIN
 #include "sunvox.h"
 
-void sa_initLib(void)
+void sa_initLib(uint32_t initFlags)
 {
 	if(sv_load_dll())
 		errexit("Cannot load sunvox library\n");
 
 	// TODO: user defined parameters
-	int32_t ver = sv_init(0, 44100, 2,
-		SV_INIT_FLAG_NO_DEBUG_OUTPUT
-	);
+	int32_t ver = sv_init(0, 44100, 2, initFlags);
 	if(ver < 0)
 		errexit("sv_init error: %d\n", ver);
 

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <dlfcn.h>
 #include <signal.h>
 //#include <unistd.h>
@@ -14,11 +15,12 @@
 
 #include "errexit.h"
 #include "sunapi.h"
+#include "sunvox.h"
 
 #define USAGE_TEXT "\
 voxp - player for SunVox projects with command-line interface\n\
 \n\
-Usage: '%s [-h] [-v N] <PATH_TO_PROJECT>'\n\
+Usage: '%s [-hf] [-v N] <PATH_TO_PROJECT>'\n\
 Options:\n\
   -h\n\
       see this text and exit\n\
@@ -37,6 +39,8 @@ Powered by:\n\
 ///////////////////////////////////////////////////////////
 typedef struct
 {
+	bool hiresSound:1;
+	bool libDebug:1;
 	int32_t volume;
 } options;
 ///////////////////////////////////////////////////////////
@@ -45,6 +49,7 @@ void parseArguments(int argc, char **argv, options *ops);
 ///////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
+	//errexit("%d\n", (int)sizeof(options));
 	if(argc < 2)
 		errexit("Try '%s -h'\n", argv[0]);
 
@@ -58,12 +63,20 @@ int main(int argc, char *argv[])
 	// Default settings
 	*optionsList = (options)
 	{
+		.hiresSound = false,
 		.volume = 255
 	};
 
 	parseArguments(argc, argv, optionsList);
 
-	sa_initLib();
+	sa_initLib(
+		(optionsList->hiresSound ?
+			SV_INIT_FLAG_AUDIO_FLOAT32 :
+			SV_INIT_FLAG_AUDIO_INT16) |
+		(optionsList->libDebug ?
+			0 :
+			SV_INIT_FLAG_NO_DEBUG_OUTPUT)
+	);
 
 	sa_openTrack(trackname, optionsList->volume);
 	sa_printTrackInfo(0);
@@ -82,21 +95,24 @@ void signalHandler(int32_t param)
 
 void parseArguments(int argc, char **argv, options *ops)
 {
-	const char *optString = "hv:";
+	const char *optString = "hv:fD";
 	char optResult = 0;
 
 	while((optResult = getopt(argc, argv, optString)) != -1)
 	{
 		switch(optResult)
 		{
-			case 'h':
-				errexit(USAGE_TEXT, argv[0]);
-				break;
 			case 'v':
 				ops->volume = (int32_t)atoi(optarg);
 				break;
-			case '?':
-				errexit("Try '%s -h'\n", argv[0]);
+			case 'f':
+				ops->hiresSound = true;
+				break;
+			case 'D':
+				ops->libDebug = true;
+				break;
+			case 'h': case '?':
+				errexit(USAGE_TEXT, argv[0]);
 				break;
 		}
 	}

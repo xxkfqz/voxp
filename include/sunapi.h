@@ -6,7 +6,9 @@
 
 // Load library using 'sv_load_dll()', initializate SunVox subsystems, open
 // a slot and prints some information
-void sa_initLib(void);
+//
+// 'initFlags' defined in 'sunvox.h' as 'SV_INIT_FLAG_AUDIO_*'
+void sa_initLib(uint32_t initFlags);
 
 // Just safely deinitialize SunVox subsystems
 void sa_deinitLib(void);
