@@ -26,6 +26,14 @@ Options:\n\
       see this text and exit\n\
   -v <volume>\n\
       playback volume (255 -> 100% (default), 511 -> 200%, etc.)\n\
+  -f\n\
+      hi-res float 32-bit sound instead default integer 16-bit\n\
+  -r\n\
+      repeat one track\n\
+  -R\n\
+      repeat tracklist (doesn't works with '-r')\n\
+  -D\n\
+      show sunvox debug information\n\
 \n\
 Powered by:\n\
   * SunVox modular synthesizer\n\
@@ -84,9 +92,17 @@ int main(int argc, char *argv[])
 			SV_INIT_FLAG_NO_DEBUG_OUTPUT)
 	);
 
-	for(int32_t currentTrack = 0; currentTrack < optionsList->inputFilesNumber; currentTrack++)
+	for(
+		int32_t currentTrack = 0;
+		currentTrack < optionsList->inputFilesNumber;
+		currentTrack++
+	)
 	{
-		printf("\nTRACK:     %d/%d", currentTrack + 1, optionsList->inputFilesNumber);
+		printf(
+			"\nTRACK:     %d/%d",
+			currentTrack + 1,
+			optionsList->inputFilesNumber
+		);
 		sa_openTrack(
 			optionsList->inputFiles[currentTrack],
 			optionsList->volume,
@@ -99,7 +115,7 @@ int main(int argc, char *argv[])
 			currentTrack >= optionsList->inputFilesNumber - 1 &&
 			optionsList->repeatMode == 2
 		)
-			currentTrack = 0;
+			currentTrack = -1;
 	}
 
 	sa_deinitLib();
@@ -127,10 +143,10 @@ void parseArguments(int argc, char **argv, options *ops)
 			case 'f':
 				ops->hiresSound = true;
 				break;
-			case 'r':
+			case 'R':
 				ops->repeatMode = 1;
 				break;
-			case 'R':
+			case 'r':
 				if(ops->repeatMode == 1)
 					break;
 				ops->repeatMode = 2;
