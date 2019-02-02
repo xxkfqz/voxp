@@ -18,11 +18,12 @@
 #define USAGE_TEXT "\
 voxp - player for SunVox projects with command-line interface\n\
 \n\
+Usage: '%s [-h] [-v N] <PATH_TO_PROJECT>'\n\
 Options:\n\
   -h\n\
       see this text and exit\n\
-  -v <0-255>\n\
-      playback volume\n\
+  -v <volume>\n\
+      playback volume (255 -> 100% (default), 511 -> 200%, etc.)\n\
 \n\
 Powered by:\n\
   * SunVox modular synthesizer\n\
@@ -54,6 +55,12 @@ int main(int argc, char *argv[])
 	const char *trackname = argv[argc - 1];
 
 	options *optionsList = (options*)malloc(sizeof(options));
+	// Default settings
+	*optionsList = (options)
+	{
+		.volume = 255
+	};
+
 	parseArguments(argc, argv, optionsList);
 
 	sa_initLib();
@@ -83,13 +90,13 @@ void parseArguments(int argc, char **argv, options *ops)
 		switch(optResult)
 		{
 			case 'h':
-				errexit(USAGE_TEXT);
+				errexit(USAGE_TEXT, argv[0]);
 				break;
 			case 'v':
 				ops->volume = (int32_t)atoi(optarg);
 				break;
 			case '?':
-				exit(-1);
+				errexit("Try '%s -h'\n", argv[0]);
 				break;
 		}
 	}
