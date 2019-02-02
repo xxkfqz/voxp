@@ -16,17 +16,13 @@
 #include "sunapi.h"
 
 #define USAGE_TEXT "\
- ██ ██\n\
- █   █                    voxp\n\
-██ █ ██      Player for SunVox projects with\n\
- █   █            command-line interface\n\
- ██ ██\n\
-  █ █    </> with <3 by xxkfqz <xxkfqz@gmail.com>\n\
-███████                  2019\n\
+voxp - player for SunVox projects with command-line interface\n\
 \n\
 Options:\n\
   -h\n\
       see this text and exit\n\
+  -v <0-255>\n\
+      playback volume\n\
 \n\
 Powered by:\n\
   * SunVox modular synthesizer\n\
@@ -38,8 +34,13 @@ Powered by:\n\
     Xiph.org Foundation\n\
 "
 ///////////////////////////////////////////////////////////
+typedef struct
+{
+	int32_t volume;
+} options;
+///////////////////////////////////////////////////////////
 void signalHandler(int32_t param);
-void parseArguments(int argc, char **argv);
+void parseArguments(int argc, char **argv, options *ops);
 ///////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
@@ -50,11 +51,14 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, signalHandler);
 	signal(SIGINT, signalHandler);
 
-	parseArguments(argc, argv);
+	const char *trackname = argv[argc - 1];
+
+	options *optionsList = (options*)malloc(sizeof(options));
+	parseArguments(argc, argv, optionsList);
 
 	sa_initLib();
 
-	sa_openTrack(argv[1]);
+	sa_openTrack(trackname, optionsList->volume);
 	sa_printTrackInfo(0);
 	sa_playTrack(0);
 
@@ -65,20 +69,28 @@ int main(int argc, char *argv[])
 void signalHandler(int32_t param)
 {
 	sa_deinitLib();
-	errexit("\nProgram has been interrupted with signal %d\n", param);
+	//errexit("\nProgram has been interrupted with signal %d\n", param);
+	exit(-1);
 }
 
-void parseArguments(int argc, char **argv)
+void parseArguments(int argc, char **argv, options *ops)
 {
-	const char *optString = "h";
+	const char *optString = "hv:";
 	char optResult = 0;
 
 	while((optResult = getopt(argc, argv, optString)) != -1)
 	{
 		switch(optResult)
 		{
-			case 'h': errexit(USAGE_TEXT); break;
-			case '?': break;
+			case 'h':
+				errexit(USAGE_TEXT);
+				break;
+			case 'v':
+				ops->volume = (int32_t)atoi(optarg);
+				break;
+			case '?':
+				exit(-1);
+				break;
 		}
 	}
 }

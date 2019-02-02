@@ -12,7 +12,7 @@ void sa_initLib(void);
 void sa_deinitLib(void);
 
 // Load and set volume
-void sa_openTrack(const char *trackname);
+void sa_openTrack(const char *trackname, int32_t volume);
 
 // Track name, modules number, length (minutes, seconds, lines)
 void sa_printTrackInfo(int32_t slot);

@@ -37,13 +37,12 @@ void sa_deinitLib(void)
 	sv_unload_dll();
 }
 
-void sa_openTrack(const char *trackname)
+void sa_openTrack(const char *trackname, int32_t volume)
 {
 	if(sv_load(0, trackname))
 		errexit("Cannot load file: %s\n", trackname);
 
-	// TODO: user defined volume
-	sv_volume(0, 64);
+	sv_volume(0, volume);
 }
 
 void sa_printTrackInfo(int32_t slot)
@@ -55,7 +54,7 @@ void sa_printTrackInfo(int32_t slot)
 
 
 	printf(
-		"%s\nModules: %d\nLenght: %d:%d (%d lines)\n",
+		"TITLE:     %s\nMODULES:   %d\nLENGTH:    %d:%-10d%d lines\n",
 
 		sv_get_song_name(slot),
 
