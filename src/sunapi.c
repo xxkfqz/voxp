@@ -9,12 +9,15 @@
 #define SUNVOX_MAIN
 #include "sunvox.h"
 
+int32_t sunvoxFrequency = 0;
+
 void sa_initLib(bool monoMode, int32_t frequency, uint32_t initFlags)
 {
 	if(sv_load_dll())
 		errexit("Cannot load sunvox library\n");
 
 	int32_t ver = sv_init(0, frequency, monoMode, initFlags);
+	sunvoxFrequency = frequency;
 	if(ver < 0)
 		errexit("sv_init error: %d\n", ver);
 
@@ -47,7 +50,7 @@ void sa_openTrack(const char *trackname, int32_t volume, bool repeatMode)
 void sa_printTrackInfo(int32_t slot)
 {
 	uint32_t minutes, seconds;
-	seconds = sv_get_song_length_frames(slot) / 44100;
+	seconds = sv_get_song_length_frames(slot) / sunvoxFrequency;
 	minutes = seconds / 60;
 	seconds %= 60;
 
