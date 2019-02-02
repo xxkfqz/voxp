@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, signalHandler);
 	signal(SIGINT, signalHandler);
 
+	///// Setting up /////
 	options *optionsList = (options*)malloc(sizeof(options));
 	// Default settings
 	*optionsList = (options)
@@ -92,6 +93,7 @@ int main(int argc, char *argv[])
 			SV_INIT_FLAG_NO_DEBUG_OUTPUT)
 	);
 
+	///// Main cycle /////
 	for(
 		int32_t currentTrack = 0;
 		currentTrack < optionsList->inputFilesNumber;
@@ -118,6 +120,7 @@ int main(int argc, char *argv[])
 			currentTrack = -1;
 	}
 
+	// One can reach this only if repeatMode == 0
 	sa_deinitLib();
 	return 0;
 }
@@ -125,7 +128,7 @@ int main(int argc, char *argv[])
 void signalHandler(int32_t param)
 {
 	sa_deinitLib();
-	errexit("\nProgram has been interrupted with signal %d\n", param);
+	errexit("\n", param);
 }
 
 void parseArguments(int argc, char **argv, options *ops)
