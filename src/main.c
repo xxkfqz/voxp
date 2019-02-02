@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <stdbool.h>
 #include <dlfcn.h>
 #include <signal.h>
@@ -19,20 +20,21 @@
 
 #define USAGE_TEXT "\
 voxp - player for SunVox projects with command-line interface\n\
+Author: xxkfqz <xxkfqz@gmail.com> 2019\n\
 \n\
-Usage: '%s [-hf] [-v N] <PATH_TO_PROJECT>'\n\
+Usage: '%s [-hfqrR] [--debug] [-v N] *.SUNVOX [*.SUNVOX] ...'\n\
 Options:\n\
-  -h\n\
+  -h, --help\n\
       see this text and exit\n\
-  -v <volume>\n\
-      playback volume (255 -> 100% (default), 511 -> 200%, etc.)\n\
-  -f\n\
+  -v <volume>, --volume <volume>\n\
+      playback volume (255 -> 100% (default), 385 -> 150%, etc.)\n\
+  -q, --high-quality\n\
       hi-res float 32-bit sound instead default integer 16-bit\n\
-  -r\n\
+  -R, --repeat-one\n\
       repeat one track\n\
-  -R\n\
-      repeat tracklist (doesn't works with '-r')\n\
-  -D\n\
+  -r, --repeat-list\n\
+      repeat tracklist (doesn't works with '-R')\n\
+  --debug\n\
       show sunvox debug information\n\
 \n\
 Powered by:\n\
@@ -48,18 +50,19 @@ Powered by:\n\
 typedef struct
 {
 	int32_t volume;
+	int32_t inputFilesNumber;
+	char **inputFiles;
+
 	bool hiresSound:1;
 	bool libDebug:1;
 	// 0 - don't repeat
 	// 1 - repeat track
 	// 2 - repeat list
 	uint8_t repeatMode:2;
-	char **inputFiles;
-	int32_t inputFilesNumber;
-} options;
+} commandLineOptions;
 ///////////////////////////////////////////////////////////
 void signalHandler(int32_t param);
-void parseArguments(int argc, char **argv, options *ops);
+void parseArguments(int argc, char **argv, commandLineOptions *ops);
 ///////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
@@ -72,9 +75,9 @@ int main(int argc, char *argv[])
 	signal(SIGINT, signalHandler);
 
 	///// Setting up /////
-	options *optionsList = (options*)malloc(sizeof(options));
+	commandLineOptions *optionsList = (commandLineOptions*)malloc(sizeof(commandLineOptions));
 	// Default settings
-	*optionsList = (options)
+	*optionsList = (commandLineOptions)
 	{
 		.hiresSound = false,
 		.libDebug = false,
@@ -131,19 +134,31 @@ void signalHandler(int32_t param)
 	errexit("\n", param);
 }
 
-void parseArguments(int argc, char **argv, options *ops)
+void parseArguments(int argc, char **argv, commandLineOptions *ops)
 {
-	const char *optString = "hv:frRD";
-	char optResult = 0;
+	const char *optString = "hv:HrRD";
+	const struct option getoptOpsList[] =
+	{
+		{"help", no_argument, NULL, 'h'},
+		{"volume", required_argument, NULL, 'v'},
+		{"high-quality", no_argument, NULL, 'q'},
+		{"repeat-all", no_argument, NULL, 'r'},
+		{"repeat-track", no_argument, NULL, 'R'},
+		{"debug", no_argument, NULL, 0},
+		{NULL, 0, NULL, 0}
+	};
 
-	while((optResult = getopt(argc, argv, optString)) != -1)
+	char optResult = 0;
+	int32_t longIndex;
+
+	while((optResult = getopt_long(argc, argv, optString, getoptOpsList, &longIndex)) != -1)
 	{
 		switch(optResult)
 		{
 			case 'v':
 				ops->volume = (int32_t)atoi(optarg);
 				break;
-			case 'f':
+			case 'q':
 				ops->hiresSound = true;
 				break;
 			case 'R':
@@ -154,10 +169,12 @@ void parseArguments(int argc, char **argv, options *ops)
 					break;
 				ops->repeatMode = 2;
 				break;
-			case 'D':
-				ops->libDebug = true;
+			case 0:
+				if(strcmp("debug", getoptOpsList[longIndex].name) == 0)
+					ops->libDebug = true;
 				break;
-			case 'h': case '?':
+			case 'h':
+			case '?':
 				errexit(USAGE_TEXT, argv[0]);
 				break;
 		}
