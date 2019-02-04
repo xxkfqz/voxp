@@ -1,7 +1,12 @@
-all:
-# Linux x86 32bit only for now
-	@gcc -m32 -g -c --std=c11 ./src/*.c -I ./include -Wall -O0
-	@gcc -m32 -ldl -lm -o voxp *.o
+CC=gcc
+CFLAGS=--std=c11 -I ./include -Wall
+LFLAGS=-ldl -lm -o voxp
+DEBUGFLAGS=-g -O0
+RELEASEFLAGS=-O3 -march=native
+SRC=$(wildcard ./src/*.c)
 
-clean:
-	@rm -fv *.o
+all:
+	${CC} ${CFLAGS} ${SRC} ${RELEASEFLAGS} ${LFLAGS}
+
+debug:
+	${CC} ${CFLAGS} ${SRC} ${DEBUGFLAGS} ${LFLAGS}
