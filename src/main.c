@@ -39,6 +39,8 @@ Options:\n\
   -f <frequency>, --frequency <frequency>\n\
       output sample rate in Hz. Supported rates: 44100, 48000, 96000, 192000\n\
       Default: 44100. High value (e.g. 192000) may occurs errors\n\
+  -l <path_to_lib>, --lib <path_to_lib>\n\
+      path to sunvox library ('sunvox.so' or 'sunvox_lofi.so')\n\
   --debug\n\
       show sunvox debug information\n\
 \n\
@@ -58,6 +60,7 @@ typedef struct
 	int32_t inputFilesNumber;
 	int32_t frequency;
 	char **inputFiles;
+	char *libPath;
 
 	bool hiresSound:1;
 	bool libDebug:1;
@@ -91,12 +94,17 @@ int main(int argc, char *argv[])
 		.repeatMode = 0,
 		.volume = 255,
 		.monoMode = false,
-		.frequency = 44100
+		.frequency = 44100,
+		.libPath = NULL
 	};
 
 	parseArguments(argc, argv, optionsList);
 
+	if(optionsList->inputFilesNumber <= 0)
+		errexit("No file specified. Try '%s -h'\n", argv[0]);
+
 	sa_initLib(
+		optionsList->libPath,
 		optionsList->monoMode,
 		optionsList->frequency,
 		// initFlags
@@ -148,7 +156,7 @@ void signalHandler(int32_t param)
 
 void parseArguments(int argc, char **argv, commandLineOptions *ops)
 {
-	const char *optString = "hv:HrRmf:";
+	const char *optString = "hv:qrRmf:l:";
 	const struct option getoptOpsList[] =
 	{
 		{"help", no_argument, NULL, 'h'},
@@ -158,6 +166,7 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 		{"repeat-track", no_argument, NULL, 'R'},
 		{"mono", required_argument, NULL, 'm'},
 		{"frequency", required_argument, NULL, 'f'},
+		{"lib", required_argument, NULL, 'l'},
 		{"debug", no_argument, NULL, 0},
 		{NULL, 0, NULL, 0}
 	};
@@ -188,6 +197,9 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 				break;
 			case 'f':
 				ops->frequency = atoi(optarg);
+				break;
+			case 'l':
+				ops->libPath = optarg;
 				break;
 			case 0:
 				if(strcmp("debug", getoptOpsList[longIndex].name) == 0)
