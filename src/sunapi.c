@@ -11,18 +11,10 @@
 
 int32_t sunvoxFrequency = 0;
 
-void sa_initLib(const char *path, bool monoMode, int32_t frequency, uint32_t initFlags)
+void sa_initLib(bool monoMode, int32_t frequency, uint32_t initFlags)
 {
-	if(path == NULL)
-	{
-		if(sv_load_dll())
-			errexit("Cannot load sunvox library\n");
-	}
-	else
-	{
-		if(sv_load_dll2(path))
-			errexit("\n");
-	}
+	if(sv_load_dll())
+		errexit("Cannot load sunvox library\n");
 
 	int32_t ver = sv_init(0, frequency, monoMode, initFlags);
 	sunvoxFrequency = frequency;
