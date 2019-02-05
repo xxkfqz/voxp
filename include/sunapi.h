@@ -22,3 +22,5 @@ void sa_printTrackInfo(int32_t slot);
 
 // Run a loop and check reach end of the track one time per second
 void sa_playTrack(int32_t slot);
+
+void sa_exportTrack(int32_t slot, const char *filename);

@@ -1,12 +1,6 @@
-CC=gcc
-CFLAGS=--std=c11 -I ./include -Wall
-LFLAGS=-ldl -lm -o voxp
-DEBUGFLAGS=-g -O0
-RELEASEFLAGS=-O3 -march=native
-SRC=$(wildcard ./src/*.c)
-
 all:
-	${CC} ${CFLAGS} ${SRC} ${RELEASEFLAGS} ${LFLAGS}
+	gcc -g -c --std=c11 ./src/*.c -I ./include -Wall -O3 -pipe
+	gcc -ldl -lm -o voxp *.o
 
-debug:
-	${CC} ${CFLAGS} ${SRC} ${DEBUGFLAGS} ${LFLAGS}
+clean:
+	rm -fv *.o

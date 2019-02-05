@@ -28,6 +28,8 @@ Options:\n\
       see this text and exit\n\
   -v <volume>, --volume <volume>\n\
       playback volume (255 -> 100% (default), 385 -> 150%, etc.)\n\
+  -e <name>, --export <name>\n\
+      export as WAV file\n\
   -q, --high-quality\n\
       hi-res float 32-bit sound instead default integer 16-bit\n\
   -R, --repeat-one\n\
@@ -61,6 +63,7 @@ typedef struct
 	int32_t frequency;
 	char **inputFiles;
 	char *libPath;
+	char *exportFilename;
 
 	bool hiresSound:1;
 	bool libDebug:1;
@@ -76,7 +79,6 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops);
 ///////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
-	//errexit("%d\n", (int)sizeof(options));
 	if(argc < 2)
 		errexit("Try '%s -h'\n", argv[0]);
 
@@ -95,7 +97,8 @@ int main(int argc, char *argv[])
 		.volume = 255,
 		.monoMode = false,
 		.frequency = 44100,
-		.libPath = NULL
+		.libPath = NULL,
+		.exportFilename = NULL
 	};
 
 	parseArguments(argc, argv, optionsList);
@@ -103,17 +106,29 @@ int main(int argc, char *argv[])
 	if(optionsList->inputFilesNumber <= 0)
 		errexit("No file specified. Try '%s -h'\n", argv[0]);
 
+	bool isExport = optionsList->exportFilename != NULL;
 	sa_initLib(
 		optionsList->libPath,
 		optionsList->monoMode,
 		optionsList->frequency,
+
 		// initFlags
-		(optionsList->hiresSound ?
-			SV_INIT_FLAG_AUDIO_FLOAT32 :
-			SV_INIT_FLAG_AUDIO_INT16) |
-		(optionsList->libDebug ?
-			0 :
-			SV_INIT_FLAG_NO_DEBUG_OUTPUT)
+		// Looks totally ugly
+		(!isExport ?
+			// Playback mode
+			(optionsList->hiresSound ?
+				SV_INIT_FLAG_AUDIO_FLOAT32 :
+				SV_INIT_FLAG_AUDIO_INT16)
+			// Export mode
+			:
+			SV_INIT_FLAG_USER_AUDIO_CALLBACK |
+			SV_INIT_FLAG_AUDIO_INT16 |
+			SV_INIT_FLAG_ONE_THREAD
+		)
+			// Print debug information?
+			| (optionsList->libDebug ?
+				0 :
+				SV_INIT_FLAG_NO_DEBUG_OUTPUT)
 	);
 
 	///// Main cycle /////
@@ -134,7 +149,11 @@ int main(int argc, char *argv[])
 			optionsList->repeatMode == 1 ? false : true
 		);
 		sa_printTrackInfo(0);
-		sa_playTrack(0);
+
+		if(isExport)
+			sa_exportTrack(0, optionsList->exportFilename);
+		else
+			sa_playTrack(0);
 
 		if(
 			currentTrack >= optionsList->inputFilesNumber - 1 &&
@@ -156,7 +175,7 @@ void signalHandler(int32_t param)
 
 void parseArguments(int argc, char **argv, commandLineOptions *ops)
 {
-	const char *optString = "hv:qrRmf:l:";
+	const char *optString = "hv:qrRmf:l:e:";
 	const struct option getoptOpsList[] =
 	{
 		{"help", no_argument, NULL, 'h'},
@@ -167,6 +186,7 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 		{"mono", required_argument, NULL, 'm'},
 		{"frequency", required_argument, NULL, 'f'},
 		{"lib", required_argument, NULL, 'l'},
+		{"export", required_argument, NULL, 'e'},
 		{"debug", no_argument, NULL, 0},
 		{NULL, 0, NULL, 0}
 	};
@@ -200,6 +220,9 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 				break;
 			case 'l':
 				ops->libPath = optarg;
+				break;
+			case 'e':
+				ops->exportFilename = optarg;
 				break;
 			case 0:
 				if(strcmp("debug", getoptOpsList[longIndex].name) == 0)

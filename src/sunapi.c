@@ -9,7 +9,12 @@
 #define SUNVOX_MAIN
 #include "sunvox.h"
 
+#include "export.h"
+
+#define MAX_STR_SIZE 255
+
 int32_t sunvoxFrequency = 0;
+uint8_t sunvoxChannels = 0;
 
 void sa_initLib(const char *path, bool monoMode, int32_t frequency, uint32_t initFlags)
 {
@@ -26,6 +31,7 @@ void sa_initLib(const char *path, bool monoMode, int32_t frequency, uint32_t ini
 
 	int32_t ver = sv_init(0, frequency, monoMode, initFlags);
 	sunvoxFrequency = frequency;
+	sunvoxChannels = monoMode ? 1 : 2;
 	if(ver < 0)
 		errexit("sv_init error: %d\n", ver);
 
@@ -79,4 +85,9 @@ void sa_playTrack(int32_t slot)
 	sv_play_from_beginning(slot);
 	while(!sv_end_of_song(slot))
 		sleep(1);
+}
+
+void sa_exportTrack(int32_t slot, const char *filename)
+{
+	exportToWav(slot, filename, sunvoxChannels, sunvoxFrequency);
 }
