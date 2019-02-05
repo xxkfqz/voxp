@@ -15,7 +15,6 @@
 
 #include "errexit.h"
 #include "sunapi.h"
-#define SUNVOX_MAIN
 #include "sunvox.h"
 
 #define USAGE_TEXT "\
