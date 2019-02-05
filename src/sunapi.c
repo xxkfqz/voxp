@@ -11,8 +11,6 @@
 
 #include "export.h"
 
-#define MAX_STR_SIZE 255
-
 int32_t sunvoxFrequency = 0;
 uint8_t sunvoxChannels = 0;
 

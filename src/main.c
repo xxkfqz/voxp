@@ -11,11 +11,11 @@
 #include <stdbool.h>
 #include <dlfcn.h>
 #include <signal.h>
-//#include <unistd.h>
 #include <getopt.h>
 
 #include "errexit.h"
 #include "sunapi.h"
+#define SUNVOX_MAIN
 #include "sunvox.h"
 
 #define USAGE_TEXT "\
