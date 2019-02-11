@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "errexit.h"
 #include "sunvox.h"
 
 #define BUFFER_SIZE 1024
@@ -11,11 +12,13 @@
 void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t freq)
 {
 	FILE *output = fopen(filename, "wb");
-	// TODO: add float64 support
-	int8_t bitrate = 2;
-	int16_t* buffer = (int16_t*)malloc(BUFFER_SIZE * channels * bitrate );
+	if(output == NULL)
+		errexit("Cannot open file \"%s\"\n", filename);
+
+	int8_t depth = 2;
+	int16_t* buffer = (int16_t*)malloc(BUFFER_SIZE * channels * depth);
 	uint32_t songLengthFrames = sv_get_song_length_frames(slot);
-	uint32_t songLengthBytes = songLengthFrames * bitrate * channels;
+	uint32_t songLengthBytes = songLengthFrames * depth * channels;
 	uint32_t val;
 
 	// WAVE header metadata
@@ -39,13 +42,13 @@ void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t f
 	val = freq;
 	fwrite(&val, 4, 1, output);
 	// Bytes per second
-	val = freq * channels * bitrate;
+	val = freq * channels * depth;
 	fwrite(&val, 4, 1, output);
 	// Bytes per sample (block align)
-	val = channels * bitrate;
+	val = channels * depth;
 	fwrite(&val, 2, 1, output);
-	// Bits per second (depth)
-	val = bitrate * 8;
+	// Bits per second (WAVE depth)
+	val = depth * 8;
 	fwrite(&val, 2, 1, output);
 
 	// WAVE data metadata
@@ -66,7 +69,7 @@ void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t f
 		currentFrame += framesNumber;
 
 		// Save this data to the file
-		fwrite(buffer, 1, framesNumber * channels * bitrate, output);
+		fwrite(buffer, 1, framesNumber * channels * depth, output);
 
 		// Print progress
 		uint8_t newPos = (uint8_t)(((float)currentFrame / (float)songLengthFrames) * 100);

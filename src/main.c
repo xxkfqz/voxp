@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include <dlfcn.h>
 #include <signal.h>
 #include <getopt.h>
@@ -31,10 +32,12 @@ Options:\n\
       export as WAV file\n\
   -q, --high-quality\n\
       hi-res float 32-bit sound instead default integer 16-bit\n\
-  -R, --repeat-one\n\
+  -s, --repeat-one\n\
       repeat one track\n\
   -r, --repeat-list\n\
-      repeat tracklist (doesn't works with '-R')\n\
+      repeat tracklist (doesn't works with '-s')\n\
+  -R, --random\n\
+      play tracks randomly (includes '-r')\n\
   -m, --mono\n\
       play tracks with single channel\n\
   -f <frequency>, --frequency <frequency>\n\
@@ -67,6 +70,7 @@ typedef struct
 	bool hiresSound:1;
 	bool libDebug:1;
 	bool monoMode:1;
+	bool random:1;
 	// 0 - don't repeat
 	// 1 - repeat track
 	// 2 - repeat list
@@ -85,6 +89,8 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, signalHandler);
 	signal(SIGINT, signalHandler);
 
+	srand((unsigned)time(NULL));
+
 	///// Setting up /////
 	commandLineOptions *optionsList = (commandLineOptions*)malloc(sizeof(commandLineOptions));
 	// Default settings
@@ -93,6 +99,7 @@ int main(int argc, char *argv[])
 		.hiresSound = false,
 		.libDebug = false,
 		.repeatMode = 0,
+		.random = false,
 		.volume = 255,
 		.monoMode = false,
 		.frequency = 44100,
@@ -132,7 +139,7 @@ int main(int argc, char *argv[])
 
 	///// Main cycle /////
 	for(
-		int32_t currentTrack = 0;
+		int32_t currentTrack = optionsList->random ? rand() % optionsList->inputFilesNumber : 0;
 		currentTrack < optionsList->inputFilesNumber;
 		currentTrack++
 	)
@@ -154,7 +161,15 @@ int main(int argc, char *argv[])
 		else
 			sa_playTrack(0);
 
-		if(
+		// Queue
+		if(optionsList->random)
+		{
+			int32_t lastTrack = currentTrack;
+			do
+				currentTrack = rand() % optionsList->inputFilesNumber;
+			while(lastTrack == currentTrack);
+		}
+		else if(
 			currentTrack >= optionsList->inputFilesNumber - 1 &&
 			optionsList->repeatMode == 2
 		)
@@ -174,14 +189,15 @@ void signalHandler(int32_t param)
 
 void parseArguments(int argc, char **argv, commandLineOptions *ops)
 {
-	const char *optString = "hv:qrRmf:l:e:";
+	const char *optString = "hv:qsrRmf:l:e:";
 	const struct option getoptOpsList[] =
 	{
 		{"help", no_argument, NULL, 'h'},
 		{"volume", required_argument, NULL, 'v'},
 		{"high-quality", no_argument, NULL, 'q'},
+		{"random", no_argument, NULL, 'R'},
 		{"repeat-all", no_argument, NULL, 'r'},
-		{"repeat-track", no_argument, NULL, 'R'},
+		{"repeat-track", no_argument, NULL, 's'},
 		{"mono", required_argument, NULL, 'm'},
 		{"frequency", required_argument, NULL, 'f'},
 		{"lib", required_argument, NULL, 'l'},
@@ -203,13 +219,16 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 			case 'q':
 				ops->hiresSound = true;
 				break;
-			case 'R':
+			case 's':
 				ops->repeatMode = 1;
 				break;
 			case 'r':
 				if(ops->repeatMode == 1)
 					break;
 				ops->repeatMode = 2;
+				break;
+			case 'R':
+				ops->random = true;
 				break;
 			case 'm':
 				ops->monoMode = true;
