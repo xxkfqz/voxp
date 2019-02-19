@@ -4,19 +4,36 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "errexit.h"
 #include "sunvox.h"
 
 #define BUFFER_SIZE 1024
 
-void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t freq)
+void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t freq, bool isHires)
 {
 	FILE *output = fopen(filename, "wb");
 	if(output == NULL)
 		errexit("Cannot open file \"%s\"\n", filename);
 
+	/*
+	// TODO: Add float32 export mode
+	int8_t depth;
+	void *buffer = NULL;
+	if(isHires)
+	{
+		depth = 4;
+		buffer = (float*)malloc(BUFFER_SIZE * channels * depth);
+	}
+	else
+	{
+		depth = 2;
+		buffer = (int16_t*)malloc(BUFFER_SIZE * channels * depth);
+	}
+	*/
 	int8_t depth = 2;
-	int16_t* buffer = (int16_t*)malloc(BUFFER_SIZE * channels * depth);
+	int16_t *buffer = (int16_t*)malloc(BUFFER_SIZE * channels * depth);
+
 	uint32_t songLengthFrames = sv_get_song_length_frames(slot);
 	uint32_t songLengthBytes = songLengthFrames * depth * channels;
 	uint32_t val;

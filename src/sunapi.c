@@ -13,8 +13,9 @@
 
 int32_t sunvoxFrequency = 0;
 uint8_t sunvoxChannels = 0;
+bool sunvoxHires = false;
 
-void sa_initLib(const char *path, bool monoMode, int32_t frequency, uint32_t initFlags)
+void sa_initLib(const char *path, bool monoMode, int32_t frequency, bool isHires, uint32_t initFlags)
 {
 	if(path == NULL)
 	{
@@ -30,6 +31,7 @@ void sa_initLib(const char *path, bool monoMode, int32_t frequency, uint32_t ini
 	int32_t ver = sv_init(0, frequency, monoMode, initFlags);
 	sunvoxFrequency = frequency;
 	sunvoxChannels = monoMode ? 1 : 2;
+	sunvoxHires = isHires;
 	if(ver < 0)
 		errexit("sv_init error: %d\n", ver);
 
@@ -87,5 +89,5 @@ void sa_playTrack(int32_t slot)
 
 void sa_exportTrack(int32_t slot, const char *filename)
 {
-	exportToWav(slot, filename, sunvoxChannels, sunvoxFrequency);
+	exportToWav(slot, filename, sunvoxChannels, sunvoxFrequency, sunvoxHires);
 }

@@ -18,4 +18,4 @@ all debug:
 	$(CC) ./*.o $(LDFLAGS)
 
 clean:
-	rm -fv ./*.o $(PACKAGE)
+	rm -fv ./*.o ./*.wav $(PACKAGE)

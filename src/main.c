@@ -22,13 +22,13 @@
 %s - player for SunVox projects with command-line interface\n\
 Author: xxkfqz <xxkfqz@gmail.com> 2019\n\
 \n\
-Usage: '%s [-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]\n\
-        [-l PATH_TO_LIB] [--debug] *.SUNVOX [*.SUNVOX] ...'\n\
+Usage: \'%s [-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]\n\
+        [-l PATH_TO_LIB] [--debug] *.SUNVOX [*.SUNVOX] ...\'\n\
 Options:\n\
   -h, --help\n\
       see this text and exit\n\
   -v <volume>, --volume <volume>\n\
-      playback volume (255 -> 100% (default), 385 -> 150%, etc.)\n\
+      playback volume (255 -> 100%% (default), 385 -> 150%%, etc.)\n\
   -e <name>, --export <name>\n\
       export track to WAV file\n\
   -q, --high-quality\n\
@@ -118,24 +118,26 @@ int main(int argc, char *argv[])
 		optionsList->libPath,
 		optionsList->monoMode,
 		optionsList->frequency,
+		optionsList->hiresSound,
 
-		// initFlags
-		// Looks totally ugly
-		(!isExport ?
-			// Playback mode
-			(optionsList->hiresSound ?
-				SV_INIT_FLAG_AUDIO_FLOAT32 :
-				SV_INIT_FLAG_AUDIO_INT16)
-			// Export mode
-			:
-			SV_INIT_FLAG_USER_AUDIO_CALLBACK |
-			SV_INIT_FLAG_AUDIO_INT16 |
-			SV_INIT_FLAG_ONE_THREAD
+		// initFlags (looks ugly) //
+		// Export mode
+		((isExport ?
+			(SV_INIT_FLAG_USER_AUDIO_CALLBACK |
+			SV_INIT_FLAG_ONE_THREAD)
+			: 0
 		)
-			// Print debug information?
-			| (optionsList->libDebug ?
-				0 :
-				SV_INIT_FLAG_NO_DEBUG_OUTPUT)
+		// Hires mode
+		| (optionsList->hiresSound ?
+			SV_INIT_FLAG_AUDIO_FLOAT32 :
+			SV_INIT_FLAG_AUDIO_INT16
+		)
+		// Print debug information?
+		| (optionsList->libDebug ?
+			0 :
+			SV_INIT_FLAG_NO_DEBUG_OUTPUT
+		))
+		// end of initFlags //
 	);
 
 	///// Main cycle /////

@@ -9,7 +9,7 @@
 // initializate SunVox subsystems, open a slot and prints some information
 //
 // 'initFlags' defined in 'sunvox.h' as 'SV_INIT_FLAG_AUDIO_*'
-void sa_initLib(const char *path, bool monoMode, int32_t frequency, uint32_t initFlags);
+void sa_initLib(const char *path, bool monoMode, int32_t frequency, bool isHires, uint32_t initFlags);
 
 // Just safely deinitialize SunVox subsystems
 void sa_deinitLib(void);
@@ -23,4 +23,5 @@ void sa_printTrackInfo(int32_t slot);
 // Run a loop and check reach end of the track one time per second
 void sa_playTrack(int32_t slot);
 
+// Export track to WAV (PCM)
 void sa_exportTrack(int32_t slot, const char *filename);
