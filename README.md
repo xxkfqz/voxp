@@ -4,7 +4,7 @@ Player for SunVox projects with command-line interface
 
 # Dependecies
 
-* [SunVox library for developers](http://warmplace/ru/soft/sunvox)
+* [SunVox library for developers](http://warmplace.ru/soft/sunvox)
 * *NIX-like OS
 
 # Usage
@@ -37,8 +37,11 @@ Options:
       path to sunvox library (e.g. 'sunvox.so' or 'sunvox_lofi.so')
   --debug
       show engine debug information
+```
 
-Powered by:
+# Powered by
+
+```
   * SunVox modular synthesizer
     Copyright (c) 2008 - 2018
     Alexander Zolotov <nightradio@gmail.com>, WarmPlace.ru
