@@ -19,17 +19,18 @@
 #include "sunvox.h"
 
 #define USAGE_TEXT "\
-voxp - player for SunVox projects with command-line interface\n\
+%s - player for SunVox projects with command-line interface\n\
 Author: xxkfqz <xxkfqz@gmail.com> 2019\n\
 \n\
-Usage: '%s [-hfqrRm] [-v N] [-f N] [--debug] *.SUNVOX [*.SUNVOX] ...'\n\
+Usage: '%s [-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]\n\
+        [-l PATH_TO_LIB] [--debug] *.SUNVOX [*.SUNVOX] ...'\n\
 Options:\n\
   -h, --help\n\
       see this text and exit\n\
   -v <volume>, --volume <volume>\n\
       playback volume (255 -> 100% (default), 385 -> 150%, etc.)\n\
   -e <name>, --export <name>\n\
-      export as WAV file\n\
+      export track to WAV file\n\
   -q, --high-quality\n\
       hi-res float 32-bit sound instead default integer 16-bit\n\
   -s, --repeat-one\n\
@@ -44,9 +45,9 @@ Options:\n\
       output sample rate in Hz. Supported rates: 44100, 48000, 96000, 192000\n\
       Default: 44100. High value (e.g. 192000) may occurs errors\n\
   -l <path_to_lib>, --lib <path_to_lib>\n\
-      path to sunvox library ('sunvox.so' or 'sunvox_lofi.so')\n\
+      path to sunvox library (e.g. 'sunvox.so' or 'sunvox_lofi.so')\n\
   --debug\n\
-      show sunvox debug information\n\
+      show engine debug information\n\
 \n\
 Powered by:\n\
   * SunVox modular synthesizer\n\
@@ -248,7 +249,8 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 				break;
 			case 'h':
 			case '?':
-				errexit(USAGE_TEXT, argv[0]);
+				printf(USAGE_TEXT, PACKAGE_NAME, argv[0]);
+				exit(0);
 				break;
 		}
 	}
