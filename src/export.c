@@ -16,23 +16,8 @@ void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t f
 	if(output == NULL)
 		errexit("Cannot open file \"%s\"\n", filename);
 
-	/*
-	// TODO: Add float32 export mode
-	int8_t depth;
-	void *buffer = NULL;
-	if(isHires)
-	{
-		depth = 4;
-		buffer = (float*)malloc(BUFFER_SIZE * channels * depth);
-	}
-	else
-	{
-		depth = 2;
-		buffer = (int16_t*)malloc(BUFFER_SIZE * channels * depth);
-	}
-	*/
-	int8_t depth = 2;
-	int16_t *buffer = (int16_t*)malloc(BUFFER_SIZE * channels * depth);
+	int8_t depth = isHires ? 4 : 2;
+	void *buffer = (void*)malloc(BUFFER_SIZE * channels * depth);
 
 	uint32_t songLengthFrames = sv_get_song_length_frames(slot);
 	uint32_t songLengthBytes = songLengthFrames * depth * channels;
@@ -50,7 +35,7 @@ void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t f
 	val = 16;
 	fwrite(&val, 4, 1, output);
 	// WAVE_FORMAT_PCM #2
-	val = 1;
+	val = isHires ? 3 : 1;
 	fwrite(&val, 2, 1, output);
 	// Channels
 	val = channels;
