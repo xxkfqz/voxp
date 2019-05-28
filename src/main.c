@@ -18,46 +18,7 @@
 #include "sunapi.h"
 #include "sunvox.h"
 
-#define USAGE_TEXT "\
-%s - player for SunVox projects with command-line interface\n\
-Author: xxkfqz <xxkfqz@gmail.com> 2019\n\
-\n\
-Usage: \'%s [-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]\n\
-        [-l PATH_TO_LIB] [--debug] *.SUNVOX [*.SUNVOX] ...\'\n\
-Options:\n\
-  -h, --help\n\
-      see this text and exit\n\
-  -v <volume>, --volume <volume>\n\
-      playback volume (255 -> 100%% (default), 385 -> 150%%, etc.)\n\
-  -e <name>, --export <name>\n\
-      export track to WAV file\n\
-  -q, --high-quality\n\
-      hi-res float 32-bit sound instead default integer 16-bit\n\
-  -s, --repeat-one\n\
-      repeat one track\n\
-  -r, --repeat-list\n\
-      repeat tracklist (doesn't works with '-s')\n\
-  -R, --random\n\
-      play tracks randomly (includes '-r')\n\
-  -m, --mono\n\
-      play tracks with single channel\n\
-  -f <frequency>, --frequency <frequency>\n\
-      output sample rate in Hz. Supported rates: 44100, 48000, 96000, 192000\n\
-      Default: 44100. High value (e.g. 192000) may occurs errors\n\
-  -l <path_to_lib>, --lib <path_to_lib>\n\
-      path to sunvox library (e.g. 'sunvox.so' or 'sunvox_lofi.so')\n\
-  --debug\n\
-      show engine debug information\n\
-\n\
-Powered by:\n\
-  * SunVox modular synthesizer\n\
-    Copyright (c) 2008 - 2018\n\
-    Alexander Zolotov <nightradio@gmail.com>, WarmPlace.ru\n\
-\n\
-  * Ogg Vorbis 'Tremor' integer playback codec\n\
-    Copyright (c) 2002\n\
-    Xiph.org Foundation\n\
-"
+#define arrSize(A) (sizeof(A) / sizeof(A[0]))
 ///////////////////////////////////////////////////////////
 typedef struct
 {
@@ -80,11 +41,12 @@ typedef struct
 ///////////////////////////////////////////////////////////
 void signalHandler(int32_t param);
 void parseArguments(int argc, char **argv, commandLineOptions *ops);
+void usage(void);
 ///////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
 	if(argc < 2)
-		errexit("Try '%s -h'\n", argv[0]);
+		usage();
 
 	// Because someone can use htop
 	signal(SIGTERM, signalHandler);
@@ -251,11 +213,68 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 				break;
 			case 'h':
 			case '?':
-				printf(USAGE_TEXT, PACKAGE_NAME, argv[0]);
+				usage();
 				exit(0);
 				break;
 		}
 	}
 	ops->inputFiles = argv + optind;
 	ops->inputFilesNumber = argc - optind;
+}
+
+void usage(void)
+{
+	const char *line1[] = {
+		" - player for SunVox projects with command-line interface",
+		"Author: xxkfqz <xxkfqz@gmail.com> 2019",
+		""
+	};
+	const char *line2[] = {
+		" [[-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]",
+		"     [-l PATH_TO_LIB] [--debug]] *.SUNVOX [*.SUNVOX] ...\'",
+		"",
+		"Options:",
+		"  -h, --help",
+		"      see this text and exit",
+		"  -v <volume>, --volume <volume>",
+		"      playback volume (255 -> 100% (default), 385 -> 150%, etc.)",
+		"  -e <name>, --export <name>",
+		"      export track to WAV file",
+		"  -q, --high-quality",
+		"      hi-res float 32-bit sound instead default integer 16-bit",
+		"  -s, --repeat-one",
+		"      repeat one track",
+		"  -r, --repeat-list",
+		"      repeat tracklist (doesn't works with '-s')",
+		"  -R, --random",
+		"      play tracks randomly (includes '-r')",
+		"  -m, --mono",
+		"      play tracks with single channel",
+		"  -f <frequency>, --frequency <frequency>",
+		"      output sample rate in Hz. Supported rates: 44100, 48000, 96000, 192000",
+		"      Default: 44100. High value (e.g. 192000) may occurs errors",
+		"  -l <path_to_lib>, --lib <path_to_lib>",
+		"      path to sunvox library (e.g. 'sunvox.so' or 'sunvox_lofi.so')",
+		"  --debug",
+		"      show engine debug information",
+		"",
+		"Powered by:",
+		"  * SunVox modular synthesizer",
+		"    Copyright (c) 2008 - 2018",
+		"    Alexander Zolotov <nightradio@gmail.com>, WarmPlace.ru",
+		"",
+		"  * Ogg Vorbis 'Tremor' integer playback codec",
+		"    Copyright (c) 2002",
+		"    Xiph.org Foundation"
+	};
+
+	uint8_t s = 0;
+	printf(PACKAGE_NAME);
+	for(; s < arrSize(line1); s++)
+		printf("%s\n", line1[s]);
+	printf(PACKAGE_NAME);
+	for(s = 0; s < arrSize(line2); s++)
+		printf("%s\n", line2[s]);
+
+	exit(0);
 }
