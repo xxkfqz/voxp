@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
 	srand((unsigned)time(NULL));
 
-	///// Setting up /////
+	// Setting up
 	commandLineOptions *optionsList = (commandLineOptions*)malloc(sizeof(commandLineOptions));
 	// Default settings
 	*optionsList = (commandLineOptions)
@@ -76,13 +76,7 @@ int main(int argc, char *argv[])
 		errexit("No file specified. Try '%s -h'\n", argv[0]);
 
 	bool isExport = optionsList->exportFilename != NULL;
-	sa_initLib(
-		optionsList->libPath,
-		optionsList->monoMode,
-		optionsList->frequency,
-		optionsList->hiresSound,
-
-		// initFlags (looks ugly) //
+	uint32_t flags = 
 		// Export mode
 		((isExport ?
 			(SV_INIT_FLAG_USER_AUDIO_CALLBACK |
@@ -98,21 +92,41 @@ int main(int argc, char *argv[])
 		| (optionsList->libDebug ?
 			0 :
 			SV_INIT_FLAG_NO_DEBUG_OUTPUT
-		))
-		// end of initFlags //
+	));
+	
+	sa_initLib(
+		optionsList->libPath,
+		optionsList->monoMode,
+		optionsList->frequency,
+		optionsList->hiresSound,
+		flags
 	);
 
-	///// Main cycle /////
+	float volumePercents = (float)optionsList->volume / 256 * 100;
+	int32_t currentTrack = optionsList->random ? rand() % optionsList->inputFilesNumber : 0;
+	// Main cycle
 	for(
-		int32_t currentTrack = optionsList->random ? rand() % optionsList->inputFilesNumber : 0;
+		;
 		currentTrack < optionsList->inputFilesNumber;
 		currentTrack++
 	)
 	{
 		printf(
-			"\nTRACK:     %d/%d",
+			"\n%-15s%d/%d\n%-15s%d Hz, %s, %d-bit\n%-15s%d / %xh / %.1f%%",
+
+			"TRACK",
 			currentTrack + 1,
-			optionsList->inputFilesNumber
+			optionsList->inputFilesNumber,
+
+			"AUDIO",
+			optionsList->frequency,
+			optionsList->monoMode ? "mono" : "stereo",
+			optionsList->hiresSound ? 32 : 16,
+
+			"VOLUME",
+			optionsList->volume,
+			optionsList->volume,
+			volumePercents
 		);
 		sa_openTrack(
 			optionsList->inputFiles[currentTrack],
@@ -198,9 +212,21 @@ void parseArguments(int argc, char **argv, commandLineOptions *ops)
 			case 'm':
 				ops->monoMode = true;
 				break;
-			case 'f':
-				ops->frequency = atoi(optarg);
+			case 'f': {
+				int32_t freq = atoi(optarg);
+				if(
+					freq != 44100 &&
+					freq != 48000 &&
+					freq != 96000 &&
+					freq != 192000
+				)
+					errexit(
+						"Unsupported frequency: %d\n",
+						freq
+					);
+				ops->frequency = freq;
 				break;
+			}
 			case 'l':
 				ops->libPath = optarg;
 				break;
@@ -237,7 +263,8 @@ void usage(void)
 		"  -h, --help",
 		"      see this text and exit",
 		"  -v <volume>, --volume <volume>",
-		"      playback volume (255 -> 100% (default), 385 -> 150%, etc.)",
+		"      playback volume",
+		"      (e.g. 256 -> 100%, 128 -> 50%, 512 -> 200%)",
 		"  -e <name>, --export <name>",
 		"      export track to WAV file",
 		"  -q, --high-quality",
@@ -251,8 +278,9 @@ void usage(void)
 		"  -m, --mono",
 		"      play tracks with single channel",
 		"  -f <frequency>, --frequency <frequency>",
-		"      output sample rate in Hz. Supported rates: 44100, 48000, 96000, 192000",
-		"      Default: 44100. High value (e.g. 192000) may occurs errors",
+		"      output sample rate in Hz",
+		"      Supported rates: 44100, 48000, 96000, 192000",
+		"      Default: 44100. High value (e.g. 192000) requires fast CPU",
 		"  -l <path_to_lib>, --lib <path_to_lib>",
 		"      path to sunvox library (e.g. 'sunvox.so' or 'sunvox_lofi.so')",
 		"  --debug",

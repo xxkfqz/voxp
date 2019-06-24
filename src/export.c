@@ -79,15 +79,19 @@ void exportToWav(int32_t slot, const char *filename, uint8_t channels, int32_t f
 		{
 			if(pos != 0)
 			{
-				printf("%2d%%%c", pos, pos % 10 == 0 ? '\n' : ' ');
+				printf(
+					"\b\b%c%d%%",
+					pos < 10 ? '\0' : '\b',
+					pos
+				);
 				fflush(stdout);
 			}
 			else
-				printf("\nExporting as \"%s\":\n", filename);
+				printf("\nExporting to \"%s\":    ", filename);
 			pos = newPos;
 		}
 	}
-	puts("done!");
+	puts("\b\b\bdone!");
 	fclose(output);
 	free(buffer);
 }

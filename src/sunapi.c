@@ -70,13 +70,19 @@ void sa_printTrackInfo(int32_t slot)
 
 
 	printf(
-		"\nTITLE:     \"%s\"\nMODULES:   %d\nLENGTH:    %d:%02d\nLINES:     %d\n",
+		"\n%-15s\"%s\"\n%-15s%d\n%-15s%d:%02d\n%-15s%d\n",
 
+		"TITLE",	
 		sv_get_song_name(slot),
 
+		"MODULES",
 		sv_get_number_of_modules(slot),
 
-		minutes, seconds, sv_get_song_length_lines(slot)
+		"LENGHT",
+		minutes, seconds,
+
+		"LINES",
+		sv_get_song_length_lines(slot)
 	);
 }
 
