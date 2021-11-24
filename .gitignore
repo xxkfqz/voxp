@@ -1,6 +1,9 @@
 *.o
 *.so
 *.sunvox
-voxp
-.*
+sunvoxp
+sunvox.so
+sunvox_lofi.so
+sunvox.dll
+sunvox_lofi.dll
 *.wav

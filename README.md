@@ -1,4 +1,10 @@
-# voxp
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Sound-Linux-More/sunvoxp)
+![GitHub Release Date](https://img.shields.io/github/release-date/Sound-Linux-More/sunvoxp)
+![GitHub repo size](https://img.shields.io/github/repo-size/Sound-Linux-More/sunvoxp)
+![GitHub all releases](https://img.shields.io/github/downloads/Sound-Linux-More/sunvoxp/total)
+![GitHub](https://img.shields.io/github/license/Sound-Linux-More/sunvoxp)
+
+# sunvoxp
 
 Player for SunVox projects with command-line interface
 
@@ -10,7 +16,7 @@ Player for SunVox projects with command-line interface
 # Usage
 
 ```
-voxp [-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]
+sunvoxp [-hqsrRm] [-v VOLUME] [-f FREQUENCY] [-e EXPORT_FILE_NAME]
      [-l PATH_TO_LIB] [--debug] *.SUNVOX [*.SUNVOX] ...
 
 Options:
